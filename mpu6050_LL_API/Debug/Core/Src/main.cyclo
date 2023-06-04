@@ -14,6 +14,6 @@ stm32f1xx_ll_bus.h:761:22:LL_APB2_GRP1_EnableClock	1
 stm32f1xx_ll_system.h:471:22:LL_FLASH_SetLatency	1
 stm32f1xx_ll_system.h:484:26:LL_FLASH_GetLatency	1
 stm32f1xx_ll_gpio.h:1562:22:LL_GPIO_AF_Remap_SWJ_NOJTAG	1
-main.c:88:5:main	2
-main.c:207:6:SystemClock_Config	5
-main.c:250:6:Error_Handler	1
+main.c:88:5:main	1
+main.c:209:6:SystemClock_Config	5
+main.c:252:6:Error_Handler	1

@@ -30,6 +30,7 @@ stm32f1xx_ll_i2c.h:1527:22:LL_I2C_DisableReset	1
 stm32f1xx_ll_i2c.h:1553:22:LL_I2C_AcknowledgeNextData	1
 stm32f1xx_ll_i2c.h:1566:22:LL_I2C_GenerateStartCondition	1
 stm32f1xx_ll_i2c.h:1577:22:LL_I2C_GenerateStopCondition	1
+stm32f1xx_ll_i2c.h:1589:22:LL_I2C_EnableBitPOS	1
 stm32f1xx_ll_i2c.h:1601:22:LL_I2C_DisableBitPOS	1
 stm32f1xx_ll_i2c.h:1727:25:LL_I2C_ReceiveData8	1
 stm32f1xx_ll_i2c.h:1739:22:LL_I2C_TransmitData8	1
@@ -43,7 +44,7 @@ i2c.c:37:6:MX_I2C1_Init	1
 i2c.c:152:6:I2C_PrepMemDMA	1
 i2c.c:170:6:I2C_SendRequest	1
 i2c.c:200:6:I2C_WriteRequest	1
-i2c.c:223:6:I2C_IRQHandlerRead	15
-i2c.c:356:6:I2C_IRQHandlerWrite	10
-i2c.c:449:6:I2C_IRQHandlerDefault	5
-i2c.c:492:6:I2C_ErrataWorkaround	1
+i2c.c:223:6:I2C_IRQHandlerRead	20
+i2c.c:416:6:I2C_IRQHandlerWrite	10
+i2c.c:509:6:I2C_IRQHandlerDefault	5
+i2c.c:552:6:I2C_ErrataWorkaround	1

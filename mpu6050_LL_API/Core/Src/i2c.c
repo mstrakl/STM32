@@ -266,16 +266,45 @@ void I2C_IRQHandlerRead()
 
 		case 7:
 
-			// Disable ack
-			LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_NACK);
+			if ( i2cRxBufferLen == 0) {
 
-			__disable_irq();
+				LL_I2C_ClearFlag_ADDR(I2C1);
+				LL_I2C_GenerateStopCondition(I2C1);
 
-			LL_I2C_ClearFlag_ADDR(I2C1);
+			} else if ( i2cRxBufferLen == 1 ) {
 
-			LL_I2C_GenerateStopCondition(I2C1);
+				// Disable ack
+				LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_NACK);
 
-			__enable_irq();
+				__disable_irq();
+
+				LL_I2C_ClearFlag_ADDR(I2C1);
+
+				LL_I2C_GenerateStopCondition(I2C1);
+
+				__enable_irq();
+
+			} else if ( i2cRxBufferLen == 2 ) {
+
+				LL_I2C_EnableBitPOS(I2C1);
+
+				__disable_irq();
+
+				LL_I2C_ClearFlag_ADDR(I2C1);
+
+				// Disable ack
+				LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_NACK);
+
+				__enable_irq();
+
+			} else {
+
+				//Enable ack
+				LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_ACK);
+
+				LL_I2C_ClearFlag_ADDR(I2C1);
+
+			}
 
 
 			i2cCEV = 8;
@@ -316,17 +345,48 @@ void I2C_IRQHandlerRead()
 			if ( LL_I2C_IsActiveFlag_RXNE(I2C1) )
 			{
 
-				if ( i2cRxBufferIndex < i2cRxBufferLen-1  ) {
+				if ( i2cRxBufferLen > 3  ) {
 
 					*i2cRxBufferPtr = LL_I2C_ReceiveData8(I2C1);
-
 					i2cRxBufferPtr++;
-					i2cRxBufferIndex++;
 
-				} else if ( i2cRxBufferIndex == i2cRxBufferLen-1 ) {
+					i2cRxBufferLen--;
+
+				} else if ( i2cRxBufferLen == 3 ) {
+
+					// Disable ack
+					LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_NACK);
+
+					//__disable_irq();
+
+					*i2cRxBufferPtr = LL_I2C_ReceiveData8(I2C1);
+					i2cRxBufferPtr++;
+
+					i2cRxBufferLen--;
+
+					//__enable_irq();
+					//LL_I2C_GenerateStopCondition(I2C1);
+
+
+				} else if ( i2cRxBufferLen == 2 ) {
+
+					__disable_irq();
+
+					LL_I2C_GenerateStopCondition(I2C1);
+
+					*i2cRxBufferPtr = LL_I2C_ReceiveData8(I2C1);
+					i2cRxBufferPtr++;
+
+					i2cRxBufferLen--;
+
+					__enable_irq();
+
+				} else if ( i2cRxBufferLen == 1 ) {
 
 					// Transmission complete
 					*i2cRxBufferPtr = LL_I2C_ReceiveData8(I2C1);
+
+					i2cRxBufferLen--;
 					i2cCEV = 0;
 
 				}  else {

@@ -123,14 +123,15 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  uint8_t rxtest[10]={0};
+  uint8_t rxtest[1]={0};
 
   // Check device ID
   //
-  I2C_SendRequest( MPU6050_ADDR, WHO_AM_I_REG, rxtest, 10 );
-  LL_mDelay(20);
+  I2C_SendRequest( MPU6050_ADDR, WHO_AM_I_REG, rxtest, 1 );
+  LL_mDelay(100);
 
-  if ( rxtest[0] == 104 ) {
+
+  //if ( rxtest[0] == 104 ) {
 
 	  // Wake up the sensor
 	  //
@@ -154,7 +155,7 @@ int main(void)
 	  I2C_WriteRequest( MPU6050_ADDR, GYRO_CONFIG_REG, 0x00 );
 	  LL_mDelay(20);
 
-  }
+  //}
 
 
   /* USER CODE END 2 */
@@ -164,6 +165,7 @@ int main(void)
 
   /* USER CODE BEGIN WHILE */
 
+  __NOP();
   uint8_t Rec_Data[6];
 
   while (1)
