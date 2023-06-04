@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    i2c.h
+  * @file    dma.h
   * @brief   This file contains all the function prototypes for
-  *          the i2c.c file
+  *          the dma.c file
   ******************************************************************************
   * @attention
   *
@@ -18,8 +18,8 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __I2C_H__
-#define __I2C_H__
+#ifndef __DMA_H__
+#define __DMA_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,43 +28,19 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+/* DMA memory to memory transfer handles -------------------------------------*/
+
 /* USER CODE BEGIN Includes */
-#include <stdbool.h>
+
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
 
-#define I2C_7BIT_ADD_WRITE(__ADDRESS__)                    ((uint8_t)((__ADDRESS__) & (uint8_t)(~I2C_OAR1_ADD0)))
-#define I2C_7BIT_ADD_READ(__ADDRESS__)                     ((uint8_t)((__ADDRESS__) | I2C_OAR1_ADD0))
-#define I2C_MEM_ADD_LSB(__ADDRESS__)                       ((uint8_t)((uint16_t)((__ADDRESS__) & (uint16_t)0x00FF)))
-
-
-
-extern uint8_t i2cCEV;
-
-extern uint8_t i2cDevAddr;
-extern uint8_t i2cMemAddr;
-
-extern uint8_t i2cRxBufferIndex;
-extern uint8_t *i2cRxBufferPtr;
-extern uint8_t i2cRxBufferLen;
-
-
 /* USER CODE END Private defines */
 
-void MX_I2C1_Init(void);
+void MX_DMA_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
-void I2C_ErrataWorkaround();
-
-void I2C_PrepMemDMA( uint32_t bf );
-
-void I2C_SendRequest( const uint8_t devAddr, const uint8_t memAddr, uint8_t* rxBuffPtr, uint8_t rxBuffLen );
-
-const uint8_t I2C_ReadByte();
-
-
 
 /* USER CODE END Prototypes */
 
@@ -72,5 +48,5 @@ const uint8_t I2C_ReadByte();
 }
 #endif
 
-#endif /* __I2C_H__ */
+#endif /* __DMA_H__ */
 

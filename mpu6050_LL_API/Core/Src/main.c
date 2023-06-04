@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "i2c.h"
 #include "gpio.h"
 
@@ -82,6 +83,16 @@ void MPU6050_Init (void)
 	uint8_t check;
 	uint8_t data;
 
+	uint16_t c1=0;
+	uint16_t c2=0;
+	uint16_t c3=0;
+	uint16_t c4=0;
+	uint16_t c5=0;
+	uint16_t c6=0;
+	uint16_t c7=0;
+	uint16_t c8=0;
+
+
 	// ----------------------------------------------------------- //
 	// Part 1: Send request memory read
 	// ----------------------------------------------------------- //
@@ -91,6 +102,7 @@ void MPU6050_Init (void)
 	while( (LL_I2C_IsActiveFlag_BUSY(I2C1) == SET) )
 	{
 		__NOP();
+		c1++;
 	}
 
 	// Disable POS
@@ -108,9 +120,11 @@ void MPU6050_Init (void)
 
 	// Wait for register to react
 	//
+
 	while ( ! (LL_I2C_IsActiveFlag_SB(I2C1) == SET) )
 	{
 		__NOP();
+		c2++;
 	}
 
 	// Send Address
@@ -121,9 +135,11 @@ void MPU6050_Init (void)
 
 	// Wait for register to react
 	//
+
 	while( ! (LL_I2C_IsActiveFlag_ADDR(I2C1) == SET) )
 	{
 		__NOP();
+		c3++;
 	}
 
 
@@ -133,6 +149,7 @@ void MPU6050_Init (void)
 	while( ! (LL_I2C_IsActiveFlag_TXE(I2C1) == SET) )
 	{
 		__NOP();
+		c4++;
 	}
 
 
@@ -142,6 +159,7 @@ void MPU6050_Init (void)
 	while( ! (LL_I2C_IsActiveFlag_TXE(I2C1) == SET) )
 	{
 		__NOP();
+		c5++;
 	}
 
 
@@ -150,9 +168,11 @@ void MPU6050_Init (void)
 
 	// Wait for register to react
 	//
+
 	while ( ! (LL_I2C_IsActiveFlag_SB(I2C1) == SET) )
 	{
 		__NOP();
+		c6++;
 	}
 
 
@@ -164,6 +184,7 @@ void MPU6050_Init (void)
 	while( ! (LL_I2C_IsActiveFlag_ADDR(I2C1) == SET) )
 	{
 		__NOP();
+		c7++;
 	}
 
 
@@ -191,16 +212,15 @@ void MPU6050_Init (void)
 	while( ! (LL_I2C_IsActiveFlag_RXNE(I2C1) == SET) )
 	{
 		__NOP();
+		c8++;
 	}
 
 
 	uint8_t result = LL_I2C_ReceiveData8(I2C1);
 
+	uint16_t call = c1+c2+c3+c4+c5+c6+c7+c8;
+
 	__NOP();
-
-
-
-
 
 
 
@@ -220,12 +240,12 @@ void MPU6050_Init (void)
 		HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, SMPLRT_DIV_REG, 1, &Data, 1, 1000);
 
 		// Set accelerometer configuration in ACCEL_CONFIG Register
-		// XA_ST=0,YA_ST=0,ZA_ST=0, FS_SEL=0 -> ± 2g
+		// XA_ST=0,YA_ST=0,ZA_ST=0, FS_SEL=0 -> ?? 2g
 		Data = 0x00;
 		HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, ACCEL_CONFIG_REG, 1, &Data, 1, 1000);
 
 		// Set Gyroscopic configuration in GYRO_CONFIG Register
-		// XG_ST=0,YG_ST=0,ZG_ST=0, FS_SEL=0 -> ± 250 °/s
+		// XG_ST=0,YG_ST=0,ZG_ST=0, FS_SEL=0 -> ?? 250 ??/s
 		Data = 0x00;
 		HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, GYRO_CONFIG_REG, 1, &Data, 1, 1000);
 	}
@@ -274,13 +294,24 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
-
   /* USER CODE BEGIN 2 */
 
-  MPU6050_Init();
+  //MPU6050_Init();
 
+  uint8_t rxtest[10]={0};
+  __NOP();
+  I2C_SendRequest( MPU6050_ADDR, WHO_AM_I_REG, rxtest, 10 );
   LL_mDelay(100);
+
+  uint8_t rx2test[10]={0};
+  __NOP();
+  I2C_SendRequest( MPU6050_ADDR, WHO_AM_I_REG, rx2test, 10 );
+  LL_mDelay(100);
+
+
+  __NOP();
 
   /* USER CODE END 2 */
 
@@ -288,12 +319,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
 
 	  //MPU6050_Init();
 
 	  //LL_mDelay(100);
 
+
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
