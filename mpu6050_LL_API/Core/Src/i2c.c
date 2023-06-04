@@ -27,8 +27,9 @@ uint8_t i2cMemAddr=0x00;
 
 uint8_t i2cRxBufferIndex=0;
 uint8_t *i2cRxBufferPtr;
-uint8_t i2cRxBufferLen;
+uint8_t i2cRxBufferLen=0;
 
+uint8_t *i2cTxBytePtr;
 
 /* USER CODE END 0 */
 
@@ -164,9 +165,14 @@ void I2C_PrepMemDMA( uint32_t bf )
 }
 
 
+
+
 void I2C_SendRequest( const uint8_t devAddr, const uint8_t memAddr, uint8_t* rxBuffPtr, uint8_t rxBuffLen  )
 {
 
+	// Set i2c Custom Event Counter
+	//
+	i2cCEV = 2;
 
 	i2cDevAddr = devAddr;
 	i2cMemAddr = memAddr;
@@ -185,23 +191,285 @@ void I2C_SendRequest( const uint8_t devAddr, const uint8_t memAddr, uint8_t* rxB
 	//
 	LL_I2C_GenerateStartCondition(I2C1);
 
+}
+
+
+
+
+
+void I2C_WriteRequest( const uint8_t devAddr, const uint8_t memAddr, const uint8_t payload  )
+{
 
 	// Set i2c Custom Event Counter
 	//
-	i2cCEV = 2;
-	__NOP();
+	i2cCEV = 12;
+
+	i2cTxBytePtr = &payload;
+
+	i2cDevAddr = devAddr;
+	i2cMemAddr = memAddr;
+
+	// Disable POS
+	LL_I2C_DisableBitPOS(I2C1);
+
+	// Generate start condition
+	//
+	LL_I2C_GenerateStartCondition(I2C1);
 
 }
 
-const uint8_t I2C_ReadByte()
+
+
+void I2C_IRQHandlerRead()
+{
+	//
+	//	i2cCEV = 0: Read Memory request inactive
+	//  i2cCEV = 1: Read Memory request active, but currently I2C is BUSY, waiting to clear
+	//  i2cCEV = 2: ACK set and START CONDITION Generated
+	//  i2cCEV = 3: Device Address + Write BIT transmitted
+	//  i2cCEV = 4: ADDR Flag is received and cleared after CEV=3
+	//  i2cCEV = 5: Memory Address transmitted
+	//  i2cCEV = 6: New start condition generated
+	//  i2cCEV = 7: Device Address + Read BIT transmitted
+	//  i2cCEV = 8: ACK, ADDR flags cleared after CEV=7, and STOP CONDITION Generated
+	//
+	//  After i2cCEV=8, i2c registers are read as long as RXNE is set
+	// 	then i2cCEV is set to 0, to finish and disable Read Memory Request
+	//
+	uint8_t dum;
+
+	if ( LL_I2C_IsActiveFlag_SB(I2C1) ) {
+
+		switch (i2cCEV) {
+		case 2:
+			LL_I2C_TransmitData8( I2C1, I2C_7BIT_ADD_WRITE(i2cDevAddr) );
+			i2cCEV = 3;
+			break;
+
+		case 6:
+			LL_I2C_TransmitData8(I2C1, I2C_7BIT_ADD_READ(i2cDevAddr));
+			i2cCEV=7;
+			break;
+
+		default:
+			break;
+		}
+
+
+	} else if ( LL_I2C_IsActiveFlag_ADDR(I2C1) ) {
+
+		switch (i2cCEV) {
+		case 3:
+			LL_I2C_ClearFlag_ADDR(I2C1);
+			i2cCEV = 4;
+			break;
+
+		case 7:
+
+			// Disable ack
+			LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_NACK);
+
+			__disable_irq();
+
+			LL_I2C_ClearFlag_ADDR(I2C1);
+
+			LL_I2C_GenerateStopCondition(I2C1);
+
+			__enable_irq();
+
+
+			i2cCEV = 8;
+			break;
+
+		default:
+			LL_I2C_ClearFlag_ADDR(I2C1);
+			break;
+		}
+
+
+	} else if ( LL_I2C_IsActiveFlag_TXE(I2C1) ) {
+
+		switch (i2cCEV) {
+		case 4:
+			LL_I2C_TransmitData8( I2C1, I2C_MEM_ADD_LSB(i2cMemAddr) );
+			i2cCEV = 5;
+
+			// Break, because TXE flag must be set again, after MemAddr transmit
+			break;
+
+		case 5:
+			LL_I2C_GenerateStartCondition(I2C1);
+			i2cCEV = 6;
+			break;
+
+		default:
+			break;
+		}
+
+
+	} else if ( LL_I2C_IsActiveFlag_RXNE(I2C1) ) {
+
+		switch (i2cCEV) {
+
+		case 8:
+
+			if ( LL_I2C_IsActiveFlag_RXNE(I2C1) )
+			{
+
+				if ( i2cRxBufferIndex < i2cRxBufferLen-1  ) {
+
+					*i2cRxBufferPtr = LL_I2C_ReceiveData8(I2C1);
+
+					i2cRxBufferPtr++;
+					i2cRxBufferIndex++;
+
+				} else if ( i2cRxBufferIndex == i2cRxBufferLen-1 ) {
+
+					// Transmission complete
+					*i2cRxBufferPtr = LL_I2C_ReceiveData8(I2C1);
+					i2cCEV = 0;
+
+				}  else {
+					dum = LL_I2C_ReceiveData8(I2C1);
+					__NOP();
+				}
+
+			} else {
+				i2cCEV = 0;
+				//i2cRxBufferIndex=0;
+			}
+
+			break;
+
+		default:
+			dum = LL_I2C_ReceiveData8(I2C1);
+			break;
+		}
+
+	}
+
+}
+
+
+
+
+void I2C_IRQHandlerWrite()
 {
 
+	//
+	//	i2cCEV < 11: Write Memory request inactive
+	//  i2cCEV = 11: Write Memory request active, but currently I2C is BUSY, waiting to clear
+	//  i2cCEV = 12: START CONDITION Generated
+	//  i2cCEV = 13: Device Address + Write BIT transmitted
+	//  i2cCEV = 14: ADDR Flag is received and cleared after CEV=13
+	//  i2cCEV = 15: STOP CONDITION generated & Memory Address transmitted
+	//  i2cCEV = 16: Another STOP CONDITION generated & payload transmitted
+	//
+	//  After i2cCEV=16,i2cCEV is set to 0, to finish and disable Write Memory Request
+	//
+
+	if ( LL_I2C_IsActiveFlag_SB(I2C1) ) {
+
+		switch (i2cCEV) {
+		case 12:
+			LL_I2C_TransmitData8( I2C1, I2C_7BIT_ADD_WRITE(i2cDevAddr) );
+			i2cCEV = 13;
+			break;
+
+		default:
+			break;
+		}
+
+
+	} else if ( LL_I2C_IsActiveFlag_ADDR(I2C1) ) {
+
+		switch (i2cCEV) {
+		case 13:
+			LL_I2C_ClearFlag_ADDR(I2C1);
+			i2cCEV = 14;
+
+			break;
+
+
+		default:
+			LL_I2C_ClearFlag_ADDR(I2C1);
+
+			break;
+		}
+
+
+	} else if ( LL_I2C_IsActiveFlag_TXE(I2C1) ) {
+
+		switch (i2cCEV) {
+		case 14:
+
+			LL_I2C_GenerateStopCondition(I2C1);
+			LL_I2C_TransmitData8( I2C1, I2C_MEM_ADD_LSB(i2cMemAddr) );
+			i2cCEV = 15;
+
+			// Break, because TXE flag must be set again, after MemAddr transmit
+			break;
+
+		case 15:
+
+			LL_I2C_GenerateStopCondition(I2C1);
+			uint8_t test = *i2cTxBytePtr;
+			__NOP();
+			LL_I2C_TransmitData8( I2C1, *i2cTxBytePtr );
+			i2cCEV = 16;
+
+			break;
+
+		default:
+			break;
+		}
+
+
+	} else if ( LL_I2C_IsActiveFlag_BTF(I2C1) ) {
+
+		switch (i2cCEV) {
+
+		case 16:
+			LL_I2C_GenerateStopCondition(I2C1);
+			i2cCEV = 0;
+			break;
+
+		default:
+			break;
+		}
+
+	}
+
+
 }
 
 
 
 
+void I2C_IRQHandlerDefault()
+{
 
+	uint8_t dum;
+
+	if ( LL_I2C_IsActiveFlag_SB(I2C1) ) {
+
+		__NOP();
+
+	} else if ( LL_I2C_IsActiveFlag_ADDR(I2C1) ) {
+
+		LL_I2C_ClearFlag_ADDR(I2C1);
+
+	} else if ( LL_I2C_IsActiveFlag_TXE(I2C1) ) {
+
+		__NOP();
+
+	} else if ( LL_I2C_IsActiveFlag_RXNE(I2C1) ) {
+
+		dum = LL_I2C_ReceiveData8(I2C1);
+
+	}
+
+}
 
 
 

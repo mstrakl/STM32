@@ -220,125 +220,21 @@ void I2C1_EV_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_EV_IRQn 0 */
 
-	uint8_t dum;
-	//	i2cCEV = 0: Read Memory request inactive
-	//  i2cCEV = 1: Read Memory request active, but currently I2C is BUSY, waiting to clear
-	//  i2cCEV = 2: ACK set and START CONDITION Generated
-	//  i2cCEV = 3: Device Address + Write BIT transmitted
-	//  i2cCEV = 4: ADDR Flag is received and cleared after CEV=3
-	//  i2cCEV = 5: Memory Address transmitted
-	//  i2cCEV = 6: New start condition generated
-	//  i2cCEV = 7: Device Address + Read BIT transmitted
-	//  i2cCEV = 8: ACK, ADDR flags cleared after CEV=7, and STOP CONDITION Generated
-	//
-	//  After i2cCEV=8, i2c registers are read as long as RXNE is set
-	// 	then i2cCEV is set to 0, to finish and disable Read Memory Request
-	//
+	if ( i2cCEV == 0 ) {
 
-	__NOP();
+		I2C_IRQHandlerDefault();
 
-	if ( LL_I2C_IsActiveFlag_SB(I2C1) ) {
+	} else if ( i2cCEV > 0 && i2cCEV <= 10 ) {
 
-		switch (i2cCEV) {
-		case 2:
-			LL_I2C_TransmitData8( I2C1, I2C_7BIT_ADD_WRITE(i2cDevAddr) );
-			i2cCEV = 3;
-			break;
+		I2C_IRQHandlerRead();
 
-		case 6:
-			LL_I2C_TransmitData8(I2C1, I2C_7BIT_ADD_READ(i2cDevAddr));
-			i2cCEV=7;
-			break;
+	} else if ( i2cCEV > 10 && i2cCEV <=20 ) {
 
-		default:
-			break;
-		}
+		I2C_IRQHandlerWrite();
 
+	} else {
 
-	} else if ( LL_I2C_IsActiveFlag_ADDR(I2C1) ) {
-
-		switch (i2cCEV) {
-		case 3:
-			LL_I2C_ClearFlag_ADDR(I2C1);
-			i2cCEV = 4;
-			break;
-
-		case 7:
-
-			// Disable ack
-			LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_NACK);
-
-			__disable_irq();
-
-			LL_I2C_ClearFlag_ADDR(I2C1);
-
-			LL_I2C_GenerateStopCondition(I2C1);
-
-			__enable_irq();
-
-
-			i2cCEV = 8;
-			break;
-
-		default:
-			LL_I2C_ClearFlag_ADDR(I2C1);
-			break;
-		}
-
-
-	} else if ( LL_I2C_IsActiveFlag_TXE(I2C1) ) {
-
-		switch (i2cCEV) {
-		case 4:
-			LL_I2C_TransmitData8( I2C1, I2C_MEM_ADD_LSB(i2cMemAddr) );
-			i2cCEV = 5;
-
-			// Break, because TXE flag must be set again, after MemAddr transmit
-			break;
-
-		case 5:
-			LL_I2C_GenerateStartCondition(I2C1);
-			i2cCEV = 6;
-			break;
-
-		default:
-			break;
-		}
-
-
-	} else if ( LL_I2C_IsActiveFlag_RXNE(I2C1) ) {
-
-		switch (i2cCEV) {
-
-		case 8:
-
-			if ( LL_I2C_IsActiveFlag_RXNE(I2C1) )
-			{
-
-				if ( i2cRxBufferIndex < i2cRxBufferLen  ) {
-
-					*i2cRxBufferPtr = LL_I2C_ReceiveData8(I2C1);
-					i2cRxBufferPtr++;
-
-					i2cRxBufferIndex++;
-
-				} else {
-					dum = LL_I2C_ReceiveData8(I2C1);
-				}
-
-			} else {
-				i2cCEV = 0;
-				//i2cRxBufferIndex=0;
-			}
-
-			break;
-
-		default:
-			dum = LL_I2C_ReceiveData8(I2C1);
-			break;
-		}
-
-
+		I2C_IRQHandlerDefault();
 
 	}
 

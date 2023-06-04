@@ -1,13 +1,3 @@
-stm32f1xx_ll_i2c.h:1128:26:LL_I2C_IsActiveFlag_TXE	1
-stm32f1xx_ll_i2c.h:1154:26:LL_I2C_IsActiveFlag_RXNE	1
-stm32f1xx_ll_i2c.h:1167:26:LL_I2C_IsActiveFlag_SB	1
-stm32f1xx_ll_i2c.h:1180:26:LL_I2C_IsActiveFlag_ADDR	1
-stm32f1xx_ll_i2c.h:1395:22:LL_I2C_ClearFlag_ADDR	1
-stm32f1xx_ll_i2c.h:1553:22:LL_I2C_AcknowledgeNextData	1
-stm32f1xx_ll_i2c.h:1566:22:LL_I2C_GenerateStartCondition	1
-stm32f1xx_ll_i2c.h:1577:22:LL_I2C_GenerateStopCondition	1
-stm32f1xx_ll_i2c.h:1727:25:LL_I2C_ReceiveData8	1
-stm32f1xx_ll_i2c.h:1739:22:LL_I2C_TransmitData8	1
 stm32f1xx_it.c:70:6:NMI_Handler	1
 stm32f1xx_it.c:85:6:HardFault_Handler	1
 stm32f1xx_it.c:100:6:MemManage_Handler	1
@@ -18,5 +8,5 @@ stm32f1xx_it.c:158:6:DebugMon_Handler	1
 stm32f1xx_it.c:171:6:PendSV_Handler	1
 stm32f1xx_it.c:184:6:SysTick_Handler	1
 stm32f1xx_it.c:205:6:DMA1_Channel6_IRQHandler	1
-stm32f1xx_it.c:219:6:I2C1_EV_IRQHandler	14
-stm32f1xx_it.c:359:6:I2C1_ER_IRQHandler	1
+stm32f1xx_it.c:219:6:I2C1_EV_IRQHandler	6
+stm32f1xx_it.c:255:6:I2C1_ER_IRQHandler	1

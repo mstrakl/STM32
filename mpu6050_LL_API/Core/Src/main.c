@@ -78,183 +78,6 @@ int16_t Gyro_Z_RAW = 0;
 
 float Ax, Ay, Az, Gx, Gy, Gz;
 
-void MPU6050_Init (void)
-{
-	uint8_t check;
-	uint8_t data;
-
-	uint16_t c1=0;
-	uint16_t c2=0;
-	uint16_t c3=0;
-	uint16_t c4=0;
-	uint16_t c5=0;
-	uint16_t c6=0;
-	uint16_t c7=0;
-	uint16_t c8=0;
-
-
-	// ----------------------------------------------------------- //
-	// Part 1: Send request memory read
-	// ----------------------------------------------------------- //
-
-
-	// Wait for busy flag to clear
-	while( (LL_I2C_IsActiveFlag_BUSY(I2C1) == SET) )
-	{
-		__NOP();
-		c1++;
-	}
-
-	// Disable POS
-	LL_I2C_DisableBitPOS(I2C1);
-
-
-	// Enable acknowledge
-	//
-	LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_ACK);
-
-
-	// Generate start condition
-	//
-	LL_I2C_GenerateStartCondition(I2C1);
-
-	// Wait for register to react
-	//
-
-	while ( ! (LL_I2C_IsActiveFlag_SB(I2C1) == SET) )
-	{
-		__NOP();
-		c2++;
-	}
-
-	// Send Address
-	//
-
-	LL_I2C_TransmitData8(I2C1, I2C_7BIT_ADD_WRITE(MPU6050_ADDR));
-
-
-	// Wait for register to react
-	//
-
-	while( ! (LL_I2C_IsActiveFlag_ADDR(I2C1) == SET) )
-	{
-		__NOP();
-		c3++;
-	}
-
-
-	LL_I2C_ClearFlag_ADDR(I2C1);
-
-
-	while( ! (LL_I2C_IsActiveFlag_TXE(I2C1) == SET) )
-	{
-		__NOP();
-		c4++;
-	}
-
-
-	LL_I2C_TransmitData8(I2C1, I2C_MEM_ADD_LSB(WHO_AM_I_REG));
-
-
-	while( ! (LL_I2C_IsActiveFlag_TXE(I2C1) == SET) )
-	{
-		__NOP();
-		c5++;
-	}
-
-
-	LL_I2C_GenerateStartCondition(I2C1);
-
-
-	// Wait for register to react
-	//
-
-	while ( ! (LL_I2C_IsActiveFlag_SB(I2C1) == SET) )
-	{
-		__NOP();
-		c6++;
-	}
-
-
-	LL_I2C_TransmitData8(I2C1, I2C_7BIT_ADD_READ(MPU6050_ADDR));
-
-
-	// Wait for register to react
-	//
-	while( ! (LL_I2C_IsActiveFlag_ADDR(I2C1) == SET) )
-	{
-		__NOP();
-		c7++;
-	}
-
-
-
-	// ----------------------------------------------------------- //
-	// Part 2: Read
-	// ----------------------------------------------------------- //
-
-	// DIsable acknowledge
-	//
-	LL_I2C_AcknowledgeNextData(I2C1, LL_I2C_NACK);
-
-
-	__disable_irq();
-
-
-	LL_I2C_ClearFlag_ADDR(I2C1);
-
-
-	LL_I2C_GenerateStopCondition(I2C1);
-
-
-	__enable_irq();
-
-	while( ! (LL_I2C_IsActiveFlag_RXNE(I2C1) == SET) )
-	{
-		__NOP();
-		c8++;
-	}
-
-
-	uint8_t result = LL_I2C_ReceiveData8(I2C1);
-
-	uint16_t call = c1+c2+c3+c4+c5+c6+c7+c8;
-
-	__NOP();
-
-
-
-	/*
-	// check device ID WHO_AM_I
-
-	HAL_I2C_Mem_Read (&hi2c1, MPU6050_ADDR,WHO_AM_I_REG,1, &check, 1, 1000);
-
-	if (check == 104)  // 0x68 will be returned by the sensor if everything goes well
-	{
-		// power management register 0X6B we should write all 0's to wake the sensor up
-		Data = 0;
-		HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, PWR_MGMT_1_REG, 1,&Data, 1, 1000);
-
-		// Set DATA RATE of 1KHz by writing SMPLRT_DIV register
-		Data = 0x07;
-		HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, SMPLRT_DIV_REG, 1, &Data, 1, 1000);
-
-		// Set accelerometer configuration in ACCEL_CONFIG Register
-		// XA_ST=0,YA_ST=0,ZA_ST=0, FS_SEL=0 -> ?? 2g
-		Data = 0x00;
-		HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, ACCEL_CONFIG_REG, 1, &Data, 1, 1000);
-
-		// Set Gyroscopic configuration in GYRO_CONFIG Register
-		// XG_ST=0,YG_ST=0,ZG_ST=0, FS_SEL=0 -> ?? 250 ??/s
-		Data = 0x00;
-		HAL_I2C_Mem_Write(&hi2c1, MPU6050_ADDR, GYRO_CONFIG_REG, 1, &Data, 1, 1000);
-	}
-*/
-
-
-}
-
-
 
 /* USER CODE END 0 */
 
@@ -296,33 +119,78 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_I2C1_Init();
+
+
   /* USER CODE BEGIN 2 */
 
-  //MPU6050_Init();
-
   uint8_t rxtest[10]={0};
-  __NOP();
+
+  // Check device ID
+  //
   I2C_SendRequest( MPU6050_ADDR, WHO_AM_I_REG, rxtest, 10 );
-  LL_mDelay(100);
+  LL_mDelay(20);
 
-  uint8_t rx2test[10]={0};
-  __NOP();
-  I2C_SendRequest( MPU6050_ADDR, WHO_AM_I_REG, rx2test, 10 );
-  LL_mDelay(100);
+  if ( rxtest[0] == 104 ) {
 
+	  // Wake up the sensor
+	  //
+	  I2C_WriteRequest( MPU6050_ADDR, PWR_MGMT_1_REG, 0x00 );
+	  LL_mDelay(20);
 
-  __NOP();
+	  // Set DATA RATE of 1KHz by writing SMPLRT_DIV register
+	  //
+	  I2C_WriteRequest( MPU6050_ADDR, SMPLRT_DIV_REG, 0x07 );
+	  LL_mDelay(20);
+
+	  // Set accelerometer configuration in ACCEL_CONFIG Register
+	  // XA_ST=0,YA_ST=0,ZA_ST=0, FS_SEL=0 -> ± 2g
+	  //
+	  I2C_WriteRequest( MPU6050_ADDR, ACCEL_CONFIG_REG, 0x00 );
+	  LL_mDelay(20);
+
+	  // Set Gyroscopic configuration in GYRO_CONFIG Register
+	  // XG_ST=0,YG_ST=0,ZG_ST=0, FS_SEL=0 -> ± 250 °/s
+	  //
+	  I2C_WriteRequest( MPU6050_ADDR, GYRO_CONFIG_REG, 0x00 );
+	  LL_mDelay(20);
+
+  }
+
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
+
+
   /* USER CODE BEGIN WHILE */
+
+  uint8_t Rec_Data[6];
+
   while (1)
   {
 
-	  //MPU6050_Init();
+	// Read accelerations --- //
 
-	  //LL_mDelay(100);
+	I2C_SendRequest( MPU6050_ADDR, ACCEL_XOUT_H_REG, Rec_Data, 6 );
+
+	Accel_X_RAW = (int16_t)(Rec_Data[0] << 8 | Rec_Data [1]);
+	Accel_Y_RAW = (int16_t)(Rec_Data[2] << 8 | Rec_Data [3]);
+	Accel_Z_RAW = (int16_t)(Rec_Data[4] << 8 | Rec_Data [5]);
+
+	__NOP();
+
+	// Convert the RAW values into acceleration in 'g'
+	// we have to divide according to the Full scale value set in FS_SEL
+	// I have configured FS_SEL = 0. So I am dividing by 16384.0
+	// for more details check ACCEL_CONFIG Register
+
+	Ax = Accel_X_RAW/16384.0;
+	Ay = Accel_Y_RAW/16384.0;
+	Az = Accel_Z_RAW/16384.0;
+
+
+	LL_mDelay(200);
+	// End read accelerations --- //
 
 
     /* USER CODE END WHILE */

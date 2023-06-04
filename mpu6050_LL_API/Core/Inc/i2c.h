@@ -49,6 +49,8 @@ extern uint8_t i2cRxBufferIndex;
 extern uint8_t *i2cRxBufferPtr;
 extern uint8_t i2cRxBufferLen;
 
+extern uint8_t *i2cTxBytePtr;
+
 
 /* USER CODE END Private defines */
 
@@ -61,6 +63,17 @@ void I2C_ErrataWorkaround();
 void I2C_PrepMemDMA( uint32_t bf );
 
 void I2C_SendRequest( const uint8_t devAddr, const uint8_t memAddr, uint8_t* rxBuffPtr, uint8_t rxBuffLen );
+
+void I2C_WriteRequest( const uint8_t devAddr, const uint8_t memAddr, const uint8_t payload  );
+
+
+void I2C_IRQHandlerRead();
+
+void I2C_IRQHandlerWrite();
+
+void I2C_IRQHandlerDefault();
+
+
 
 const uint8_t I2C_ReadByte();
 
