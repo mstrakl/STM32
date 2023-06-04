@@ -1,0 +1,32 @@
+core_cm3.h:1499:26:uint32_t __NVIC_GetPriorityGrouping()	1
+core_cm3.h:1511:22:void __NVIC_EnableIRQ(IRQn_Type)	2
+core_cm3.h:1639:22:void __NVIC_SetPriority(IRQn_Type, uint32_t)	2
+core_cm3.h:1686:26:uint32_t NVIC_EncodePriority(uint32_t, uint32_t, uint32_t)	2
+stm32f1xx_ll_dma.h:552:22:void LL_DMA_SetDataTransferDirection(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:601:22:void LL_DMA_SetMode(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:646:22:void LL_DMA_SetPeriphIncMode(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:691:22:void LL_DMA_SetMemoryIncMode(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:737:22:void LL_DMA_SetPeriphSize(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:784:22:void LL_DMA_SetMemorySize(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:832:22:void LL_DMA_SetChannelPriorityLevel(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:879:22:void LL_DMA_SetDataLength(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:964:22:void LL_DMA_SetMemoryAddress(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:986:22:void LL_DMA_SetPeriphAddress(DMA_TypeDef*, uint32_t, uint32_t)	1
+stm32f1xx_ll_dma.h:1761:22:void LL_DMA_EnableIT_TC(DMA_TypeDef*, uint32_t)	1
+stm32f1xx_ll_bus.h:267:22:void LL_AHB1_GRP1_EnableClock(uint32_t)	1
+stm32f1xx_ll_bus.h:445:22:void LL_APB1_GRP1_EnableClock(uint32_t)	1
+stm32f1xx_ll_bus.h:761:22:void LL_APB2_GRP1_EnableClock(uint32_t)	1
+stm32f1xx_ll_usart.h:412:22:void LL_USART_Enable(USART_TypeDef*)	1
+stm32f1xx_ll_usart.h:1527:22:void LL_USART_ConfigAsyncMode(USART_TypeDef*)	1
+stm32f1xx_ll_usart.h:2083:22:void LL_USART_EnableIT_RXNE(USART_TypeDef*)	2
+stm32f1xx_ll_usart.h:2364:22:void LL_USART_EnableDMAReq_RX(USART_TypeDef*)	2
+stm32f1xx_ll_usart.h:2431:26:uint32_t LL_USART_DMA_GetRegAddr(const USART_TypeDef*)	1
+globals.h:17:3:events::Event8::Event8(const unsigned char&)	1
+globals.h:48:3:events::Event16::Event16(const unsigned int&)	1
+globals.h:78:7:Globals::Globals()	1
+usart.cpp:31:6:void MX_USART1_UART_Init()	1
+usart.cpp:126:6:void MX_USART3_UART_Init()	1
+globals.h:78:7:Globals::~Globals()	1
+usart.cpp:189:1:void __static_initialization_and_destruction_0(int, int)	7
+usart.cpp:189:1:cpp)	1
+usart.cpp:189:1:cpp)	1
