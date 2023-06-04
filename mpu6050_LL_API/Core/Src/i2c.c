@@ -37,6 +37,10 @@ void MX_I2C1_Init(void)
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);
+
   /**I2C1 GPIO Configuration
   PB6   ------> I2C1_SCL
   PB7   ------> I2C1_SDA
@@ -46,9 +50,6 @@ void MX_I2C1_Init(void)
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /* Peripheral clock enable */
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);
 
   /* USER CODE BEGIN I2C1_Init 1 */
 
@@ -70,7 +71,7 @@ void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
 
-
+  //I2C_ErrataWorkaround();
 
   LL_I2C_Enable(I2C1);
 
@@ -81,5 +82,65 @@ void MX_I2C1_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+
+
+
+void I2C_ErrataWorkaround()
+{
+
+
+	  // Errata ES096 - Rev15, 2.8.7 Workaround
+
+	  LL_I2C_Disable(I2C1);
+
+	  //PB6   ------> I2C1_SCL
+	  //PB7   ------> I2C1_SDA
+
+	  uint32_t rd1=0;
+
+	  // Configure to Output, Open-Drain and Set LOW
+	  //
+	  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_OUTPUT);
+	  LL_GPIO_SetPinOutputType(GPIOB, LL_GPIO_PIN_6, LL_GPIO_OUTPUT_OPENDRAIN);
+	  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_DOWN);
+	  rd1 = LL_GPIO_GetPinPull(GPIOB, LL_GPIO_PIN_6);
+
+
+	  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_7, LL_GPIO_MODE_OUTPUT);
+	  LL_GPIO_SetPinOutputType(GPIOB, LL_GPIO_PIN_7, LL_GPIO_OUTPUT_OPENDRAIN);
+	  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_7, LL_GPIO_PULL_DOWN);
+	  rd1 = LL_GPIO_GetPinPull(GPIOB, LL_GPIO_PIN_7);
+
+	  // Set HIGH
+	  //
+	  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_UP);
+	  rd1 = LL_GPIO_GetPinPull(GPIOB, LL_GPIO_PIN_6);
+
+	  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_7, LL_GPIO_PULL_UP);
+	  rd1 = LL_GPIO_GetPinPull(GPIOB, LL_GPIO_PIN_7);
+
+
+	  // Configure pins normally
+	  //
+	  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_ALTERNATE);
+	  LL_GPIO_SetPinOutputType(GPIOB, LL_GPIO_PIN_6, LL_GPIO_OUTPUT_OPENDRAIN);
+
+	  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_7, LL_GPIO_MODE_ALTERNATE);
+	  LL_GPIO_SetPinOutputType(GPIOB, LL_GPIO_PIN_7, LL_GPIO_OUTPUT_OPENDRAIN);
+
+	  // Set and clear SWRST
+
+	  LL_I2C_EnableReset(I2C1);
+	  LL_I2C_DisableReset(I2C1);
+
+
+	  LL_I2C_Enable(I2C1);
+
+
+	  // End Workaround
+
+}
+
 
 /* USER CODE END 1 */

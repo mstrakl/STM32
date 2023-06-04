@@ -275,10 +275,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+
   /* USER CODE BEGIN 2 */
 
-
   MPU6050_Init();
+
+  LL_mDelay(100);
 
   /* USER CODE END 2 */
 
@@ -287,6 +289,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
+	  //MPU6050_Init();
+
+	  //LL_mDelay(100);
+
 
     /* USER CODE BEGIN 3 */
   }
