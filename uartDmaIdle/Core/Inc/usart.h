@@ -29,16 +29,24 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "dynamicbuffer.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
+
+#define U2_RXFRAMELEN 10
+#define U2_TXFRAMELEN 20
 
 /* USER CODE END Private defines */
 
 void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+extern DynamicBuffer u2_txBuff;
+
+void UART_TransmitDMA( USART_TypeDef *USARTx, DynamicBuffer *dbuff );
+
 
 /* USER CODE END Prototypes */
 

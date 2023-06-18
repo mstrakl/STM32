@@ -1,0 +1,8 @@
+dynamicbuffer.c:13:6:DynamicBuffer_Init	1
+dynamicbuffer.c:24:6:DynamicBuffer_Append	2
+dynamicbuffer.c:39:6:DynamicBuffer_RollPosIndex	3
+dynamicbuffer.c:64:11:DynamicBuffer_GetBuffAddr	1
+dynamicbuffer.c:70:8:DynamicBuffer_GetBuffSize	1
+dynamicbuffer.c:76:8:DynamicBuffer_GetBuffPos	1
+dynamicbuffer.c:81:6:DynamicBuffer_SetTxSize	1
+dynamicbuffer.c:86:8:DynamicBuffer_GetTxSize	1

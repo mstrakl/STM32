@@ -91,13 +91,50 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  uint8_t txbuff[20];
+  int k = 0;
+
+  uint32_t tck=0;
+  int delay = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+      // Set delay
+      if ( HAL_GetTick() - tck > 2000 ) {
+          if ( delay > 0 ) {
+              delay = 0;
+          } else {
+              delay = 250;
+          }
+
+          tck = HAL_GetTick();
+      }
+
+
+
+      // Tx data
+      for (int i=0; i<8; i++)
+      {
+          txbuff[i] = i+k;
+      }
+
+      DynamicBuffer_Append( &u2_txBuff, txbuff, 8 );
+      UART_TransmitDMA(USART2, &u2_txBuff);
+
+      k++;
+
+
+      if ( k > 100 ) k=0;
+
+      HAL_Delay( delay );
+
     /* USER CODE END WHILE */
+
 
     /* USER CODE BEGIN 3 */
   }

@@ -22,6 +22,10 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include "usart.h"
+#include "dynamicbuffer.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,6 +45,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+
+size_t usart2_rx_len;
+size_t usart2_tx_len;
 
 /* USER CODE END PV */
 
@@ -205,6 +212,20 @@ void DMA1_Stream5_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream5_IRQn 0 */
 
+    if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_STREAM_5) && LL_DMA_IsActiveFlag_TC5(DMA1)) {
+
+        LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_5);
+
+        LL_DMA_ClearFlag_TC5(DMA1);
+
+        LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_5, U2_RXFRAMELEN);
+
+        LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
+
+
+    }
+
+
   /* USER CODE END DMA1_Stream5_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
@@ -219,6 +240,20 @@ void DMA1_Stream6_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream6_IRQn 0 */
 
+    if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_STREAM_6) && LL_DMA_IsActiveFlag_TC6(DMA1)) {
+
+        LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_6);
+
+        LL_DMA_ClearFlag_TC6(DMA1);
+
+
+        DynamicBuffer_RollPosIndex( &u2_txBuff, DynamicBuffer_GetTxSize( &u2_txBuff ) );
+        DynamicBuffer_SetTxSize( &u2_txBuff, 0 );
+
+        UART_TransmitDMA(USART2, &u2_txBuff);
+
+    }
+
   /* USER CODE END DMA1_Stream6_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream6_IRQn 1 */
@@ -232,6 +267,21 @@ void DMA1_Stream6_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
+
+    if (LL_USART_IsEnabledIT_IDLE(USART2) && LL_USART_IsActiveFlag_IDLE(USART2)) {
+
+        usart2_rx_len = U2_RXFRAMELEN - LL_DMA_GetDataLength(DMA1, LL_DMA_STREAM_5);
+
+        LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_5);
+
+        LL_USART_ClearFlag_IDLE(USART2);
+
+        LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_5, U2_RXFRAMELEN);
+
+        LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
+
+    }
+
 
   /* USER CODE END USART2_IRQn 0 */
   /* USER CODE BEGIN USART2_IRQn 1 */

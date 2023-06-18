@@ -22,13 +22,10 @@
 
 /* USER CODE BEGIN 0 */
 
+//#define ARRAY_LEN(x)            (sizeof(x) / sizeof((x)[0]))
 
-#define ARRAY_LEN(x)            (sizeof(x) / sizeof((x)[0]))
-
-uint8_t usart2_rx_dma_buffer[64];
-
-
-
+uint8_t u2_rxBuff[ U2_RXFRAMELEN ];
+DynamicBuffer u2_txBuff;
 
 
 /* USER CODE END 0 */
@@ -71,7 +68,7 @@ void MX_USART2_UART_Init(void)
 
   LL_DMA_SetStreamPriorityLevel(DMA1, LL_DMA_STREAM_5, LL_DMA_PRIORITY_MEDIUM);
 
-  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_5, LL_DMA_MODE_CIRCULAR);
+  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_5, LL_DMA_MODE_NORMAL);
 
   LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_STREAM_5, LL_DMA_PERIPH_NOINCREMENT);
 
@@ -108,12 +105,27 @@ void MX_USART2_UART_Init(void)
 
   /* USER CODE BEGIN USART2_Init 1 */
 
+  // RX
+
   LL_DMA_SetPeriphAddress(DMA1, LL_DMA_STREAM_5, LL_USART_DMA_GetRegAddr(USART2));
-  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_STREAM_5, (uint32_t)usart2_rx_dma_buffer);
-  LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_5, ARRAY_LEN(usart2_rx_dma_buffer));
+  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_STREAM_5, (uint32_t)u2_rxBuff);
+  LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_5, U2_RXFRAMELEN);
 
   LL_DMA_DisableIT_HT(DMA1, LL_DMA_STREAM_5);
   LL_DMA_EnableIT_TC(DMA1, LL_DMA_STREAM_5);
+
+
+  // TX
+
+  DynamicBuffer_Init( &u2_txBuff, U2_TXFRAMELEN );
+
+  LL_DMA_SetPeriphAddress(DMA1, LL_DMA_STREAM_6, LL_USART_DMA_GetRegAddr(USART2));
+  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_STREAM_6, (uint32_t)DynamicBuffer_GetBuffAddr(&u2_txBuff));
+  LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_6, DynamicBuffer_GetBuffSize(&u2_txBuff));
+
+  LL_DMA_DisableIT_HT(DMA1, LL_DMA_STREAM_6);
+  LL_DMA_EnableIT_TC(DMA1, LL_DMA_STREAM_6);
+
 
 
   /* USER CODE END USART2_Init 1 */
@@ -132,8 +144,11 @@ void MX_USART2_UART_Init(void)
 
   LL_USART_EnableDMAReq_RX(USART2);
   LL_USART_EnableIT_IDLE(USART2);
-
   LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
+
+  LL_USART_EnableDMAReq_TX(USART2);
+  LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_6);
+
   LL_USART_Enable(USART2);
 
 
@@ -144,5 +159,44 @@ void MX_USART2_UART_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+void UART_TransmitDMA( USART_TypeDef *USARTx, DynamicBuffer *dbuff )
+{
+
+    if ( (DynamicBuffer_GetBuffPos(dbuff) > 0) && (DynamicBuffer_GetTxSize(dbuff) == 0) ) {
+
+        size_t txsize = DynamicBuffer_GetBuffPos(dbuff);
+
+        if ( txsize > 10 ) txsize = 10;
+
+        DynamicBuffer_SetTxSize( dbuff, txsize );
+
+        LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_6, DynamicBuffer_GetTxSize(dbuff));
+        LL_DMA_SetMemoryAddress(DMA1, LL_DMA_STREAM_6, (uint32_t)DynamicBuffer_GetBuffAddr(dbuff));
+
+        // Clear all flags
+        LL_DMA_ClearFlag_TC6(DMA1);
+        LL_DMA_ClearFlag_HT6(DMA1);
+        LL_DMA_ClearFlag_DME6(DMA1);
+        LL_DMA_ClearFlag_FE6(DMA1);
+        LL_DMA_ClearFlag_TE6(DMA1);
+
+        // Start transfer
+        LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_6);
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
 
 /* USER CODE END 1 */

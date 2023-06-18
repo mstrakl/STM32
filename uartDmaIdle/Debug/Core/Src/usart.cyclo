@@ -6,6 +6,7 @@ stm32f4xx_ll_usart.h:410:22:LL_USART_Enable	1
 stm32f4xx_ll_usart.h:1479:22:LL_USART_ConfigAsyncMode	1
 stm32f4xx_ll_usart.h:2024:22:LL_USART_EnableIT_IDLE	2
 stm32f4xx_ll_usart.h:2316:22:LL_USART_EnableDMAReq_RX	2
+stm32f4xx_ll_usart.h:2349:22:LL_USART_EnableDMAReq_TX	2
 stm32f4xx_ll_usart.h:2383:26:LL_USART_DMA_GetRegAddr	1
 stm32f4xx_ll_bus.h:409:22:LL_AHB1_GRP1_EnableClock	1
 stm32f4xx_ll_bus.h:1185:22:LL_APB1_GRP1_EnableClock	1
@@ -22,6 +23,12 @@ stm32f4xx_ll_dma.h:1019:22:LL_DMA_SetChannelSelection	1
 stm32f4xx_ll_dma.h:1276:22:LL_DMA_DisableFifoMode	1
 stm32f4xx_ll_dma.h:1436:22:LL_DMA_SetMemoryAddress	1
 stm32f4xx_ll_dma.h:1459:22:LL_DMA_SetPeriphAddress	1
+stm32f4xx_ll_dma.h:2155:22:LL_DMA_ClearFlag_HT6	1
+stm32f4xx_ll_dma.h:2243:22:LL_DMA_ClearFlag_TC6	1
+stm32f4xx_ll_dma.h:2331:22:LL_DMA_ClearFlag_TE6	1
+stm32f4xx_ll_dma.h:2419:22:LL_DMA_ClearFlag_DME6	1
+stm32f4xx_ll_dma.h:2507:22:LL_DMA_ClearFlag_FE6	1
 stm32f4xx_ll_dma.h:2586:22:LL_DMA_EnableIT_TC	1
 stm32f4xx_ll_dma.h:2646:22:LL_DMA_DisableIT_HT	1
-usart.c:38:6:MX_USART2_UART_Init	1
+usart.c:35:6:MX_USART2_UART_Init	1
+usart.c:163:6:UART_TransmitDMA	4
